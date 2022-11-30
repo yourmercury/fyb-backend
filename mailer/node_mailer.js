@@ -13,13 +13,14 @@ const authData = nodemailer.createTransport({
 
 
 function sendMail(to, text, subject){
+    console.log(process.env.EMAIL, process.env.PASSWORD)
     authData.sendMail({
         to,
         from: "Appointment app",
         text,
         subject,
     }).then(() => {
-        console.log("message was sent to " + email);
+       
     }).catch(error => {
         console.log(error);
     });

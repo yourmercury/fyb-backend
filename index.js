@@ -135,6 +135,7 @@ function initializeServer() {
   app.put("/accept/:id", async (req, res) => {
     let obj = req.body;
     let id = req.params.id;
+    let rej = obj.reject;
     try {
       let appointment = await AppointmentModel.findById(id);
       let lecturer = await UserModel.findOne({
@@ -150,23 +151,44 @@ function initializeServer() {
         return;
       }
 
-      if (appointment.time != obj.time && appointment.status > 0) {
-        if (appointment.status == 1) {
-          appointment.status = obj.status == 1 ? appointment.status : 0;
-        } else if (appointment.status == 2) {
-          appointment.status = obj.status == 1 ? 1 : 2;
-        } else {
-          appointment.status = obj.status == 1 ? 1 : 2;
+      let pow = obj.userType == 0 ? 2 : 1;
+
+      // if ((appointment.time != obj.time && appointment.status > 0) && !rej) {
+      //   if (appointment.status == 1) {
+      //     appointment.status = obj.status == 1 ? appointment.status : 0;
+      //   } else if (appointment.status == 2) {
+      //     appointment.status = obj.status == 1 ? 1 : 2;
+      //   } else {
+      //     appointment.status = obj.status == 1 ? 1 : 2;
+      //   }
+      // } else if (rej) {
+      //   appointment.status - rej;
+      // } 
+
+      if(!rej){
+        if(appointment.status == pow){
+          
+        }else if(appointment.status == 3){
+          
+        }else {
+          appointment.status += pow;
+        }
+      }else {
+        if(appointment.status == pow){
+          appointment.status -= pow;
+        }else if(appointment.status == 3){
+          appointment.status -= pow;
+        }else {
+          
         }
       }
 
       appointment.time = obj.time;
-      appointment.status = obj.status;
 
       await appointment.save();
       res.status(201).json(appointment);
 
-      //Mail the subject
+      // Mail the subject
 
       sendMail(student.email, `Appointment updated`, "Appointment update");
 
@@ -239,12 +261,13 @@ function initializeServer() {
     }
   });
 
-  app.get("/login", async (req, res) => {
+  app.post("/login", async (req, res) => {
     let obj = req.body;
+    // console.log(obj)
     try {
       let x = await UserModel.findOne({ id: obj.id, password: obj.password });
-      if (x.$isEmpty()) {
-        res.status(404).end();
+      if (!x) {
+        res.status(404).json(x);
         return;
       }
 
